@@ -9,11 +9,6 @@ def balance_data(data: dict, imbalance_detection_func=is_imbalanced) -> dict:
     """
     Balances class representation within datasets stored in a dictionary.
 
-    This function iterates through datasets stored in the provided dictionary. 
-    For each dataset, it checks for class imbalance using the `imbalance_detection_func` 
-    (defaults to `is_imbalanced`). If imbalance is detected, it balances the classes 
-    by oversampling the underrepresented class to match the size of the overrepresented class.
-
     Args:
         data (dict): A dictionary containing datasets as key-value pairs. 
                     Keys are dataset names, values are dictionaries with class labels as keys 
