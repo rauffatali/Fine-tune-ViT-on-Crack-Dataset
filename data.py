@@ -5,9 +5,33 @@ from pathlib import Path
 
 from utils import is_imbalanced, prep_data
 
-def balance_data(data: dict) -> dict:
+def balance_data(data: dict, imbalance_detection_func=is_imbalanced) -> dict:
+    """
+    Balances class representation within datasets stored in a dictionary.
+
+    This function iterates through datasets stored in the provided dictionary. 
+    For each dataset, it checks for class imbalance using the `imbalance_detection_func` 
+    (defaults to `is_imbalanced`). If imbalance is detected, it balances the classes 
+    by oversampling the underrepresented class to match the size of the overrepresented class.
+
+    Args:
+        data (dict): A dictionary containing datasets as key-value pairs. 
+                    Keys are dataset names, values are dictionaries with class labels as keys 
+                    and lists of image paths and labels as values.
+        imbalance_detection_func (function, optional): A function that determines 
+                    if a dataset is imbalanced. Defaults to `is_imbalanced`.
+
+    Returns:
+        dict: The updated `data` dictionary with balanced datasets.
+
+    Raises:
+        ValueError: If the `imbalance_detection_func` is not a function.
+    """
+    if not callable(imbalance_detection_func):
+        raise ValueError("imbalance_detection_func must be a function")
+    
     for dataset in data:
-        if is_imbalanced(data[dataset]):
+        if imbalance_detection_func(data[dataset]):
             class_counts = {cls: len(data[dataset][cls]) for cls in data[dataset]}
             underrepresented, overrepresented = min(class_counts, key=class_counts.get), max(class_counts, key=class_counts.get)
             data[dataset][overrepresented] = random.choices(data[dataset][overrepresented], k=len(data[dataset][underrepresented]))
