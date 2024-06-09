@@ -1,6 +1,9 @@
 import os
-import pandas as pd
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from PIL import Image
 
 from sklearn.model_selection import train_test_split
 
@@ -82,6 +85,25 @@ def prep_data(path: Path, data: dict, dataset_name: str = None) -> dict:
             if cls not in data[dataset_name]:
                 data[dataset_name][cls] = []
             data[dataset_name][cls].append([os.path.join(data_cls_path, filename), cls])
-            break
     
     return data
+
+def calculate_mean_std(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """
+    This function calculates the mean and standard deviation of pixel values across all images in a DataFrame.
+
+    Args:
+        df (pandas.DataFrame): A DataFrame containing columns for image paths ('path') and labels ('label').
+
+    Returns:
+        tuple: A tuple containing two tuples: mean and standard deviation of pixel values.
+    """
+
+    images = np.array([np.array(Image.open(path).convert('RGB')) / 255.0 for path in df['image']])
+    
+    # Flatten the image data for calculating mean and std
+    data = images.reshape(-1, images.shape[-1])
+
+    mean = np.mean(data, axis=0)
+    std = np.std(data, axis=0)
+    return mean, std
