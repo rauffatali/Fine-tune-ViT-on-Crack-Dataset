@@ -96,7 +96,7 @@ def calculate_mean_std(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
         df (pandas.DataFrame): A DataFrame containing columns for image paths ('path') and labels ('label').
 
     Returns:
-        tuple: A tuple containing two tuples: mean and standard deviation of pixel values.
+        tuple: A tuple containing two NumPy arrays: mean and standard deviation of pixel values.
     """
 
     images = np.array([np.array(Image.open(path).convert('RGB')) / 255.0 for path in df['image']])

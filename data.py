@@ -5,6 +5,8 @@ from pathlib import Path
 
 from utils import is_imbalanced, prep_data
 
+ROOT = os.getcwd()
+
 def balance_data(data: dict, imbalance_detection_func=is_imbalanced) -> dict:
     """
     Balances class representation within datasets stored in a dictionary.
@@ -61,21 +63,22 @@ def get_data_as_dataframe(path: Path, dataset_name: str = None, balance: bool = 
         ValueError: If the folder structure is not as expected.
     """
     data = dict()
+
+    datasets = os.listdir(path)
     
-    if dataset_name:
-        if dataset_name not in os.listdir(path):
-            raise ValueError(f"Dataset {dataset_name} not found.")
-        else:
-            try:
+    if dataset_name in datasets:
+        try:
                 data = prep_data(path, data, dataset_name)
-            except:
-                raise ValueError('Unknown folder structure.')
-    else:
+        except:
+            raise ValueError('Unknown folder structure.')
+    elif dataset_name == 'all':
         try:
             for d_name in os.listdir(path):
                 data = prep_data(path, data, d_name)
         except:
             raise ValueError('Unknown folder structure.')
+    else:
+        raise ValueError(f"Improper dataset name: {dataset_name}. Please, use one of {datasets+['all']}")
     
     if balance:
         data = balance_data(data)

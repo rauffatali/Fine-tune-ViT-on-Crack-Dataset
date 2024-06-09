@@ -105,3 +105,24 @@ def show_dl(dl: DataLoader, n_samples: int=None, cols: int = 6, figsize: tuple =
 
     plt.tight_layout()
     plt.show()
+
+def plot_acc_loss_curve(train_hist, figsize = (15, 5)) -> None:
+    fig = plt.figure(figsize=figsize)
+    
+    fig.add_subplot(1, 2, 1)
+    plt.title("Loss curve")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.plot(train_hist['train_losses'], label="train")
+    plt.plot(train_hist['val_losses'], label="val")
+    plt.legend()
+
+    fig.add_subplot(1, 2, 2)
+    plt.title("Accuracy curve")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    plt.plot(train_hist['train_accs'], label="train")
+    plt.plot(train_hist['val_accs'], label="val")
+    plt.legend()
+
+    plt.show()
