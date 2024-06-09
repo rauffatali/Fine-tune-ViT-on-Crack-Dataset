@@ -84,7 +84,7 @@ def eval(model, dataloaders, criterion, device):
 
     return val_loss, val_acc, y_pred, y_true
 
-def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, device, checkpoint_interval=None, verbose=True):
+def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, scheduler, device, checkpoint_interval=None, verbose=True):
 
     # Initialize training params
     params = {
@@ -125,14 +125,17 @@ def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, device, checkpoi
 
         if verbose:
             # Print the epoch results
-            print('Epoch [{}/{}], train loss: {:.4f}, train acc: {:.4f}, val loss: {:.4f}, val acc: {:.4f}'
-                  .format(epoch+1, NUM_EPOCHS, train_loss, train_acc, val_loss, val_acc))
+            print('Epoch [{}/{}], lr: {}, train loss: {:.4f}, train acc: {:.4f}, val loss: {:.4f}, val acc: {:.4f}'
+                  .format(epoch+1, NUM_EPOCHS, optimizer.param_groups[0]['lr'], train_loss, train_acc, val_loss, val_acc))
             
         train_hist['train_losses'].append(train_loss)
         train_hist['train_accs'].append(train_acc)
         
         train_hist['val_losses'].append(val_loss)
         train_hist['val_accs'].append(val_acc)
+
+        # Adjust learning rate
+        scheduler.step(val_loss)
         
         # Save best model
         weights_dir = os.path.join(save_dir, 'weights') 
