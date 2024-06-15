@@ -1,3 +1,4 @@
+import math
 import random
 import numpy as np
 import pandas as pd
@@ -7,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from torch.utils.data import DataLoader
 
-def show_df(df: pd.DataFrame, n_samples: int, cols: int = 3, figsize: tuple = (10, 10)) -> None:
+def show_df(df: pd.DataFrame, n_samples: int, cols: int = None, figsize: tuple = (10, 10)) -> None:
     """
     Displays a grid of n_samples images and their corresponding labels from the DataFrame.
 
@@ -18,6 +19,9 @@ def show_df(df: pd.DataFrame, n_samples: int, cols: int = 3, figsize: tuple = (1
     """
     if n_samples > len(df):
         n_samples = len(df)
+
+    if cols is None:
+        cols = round(math.sqrt(n_samples))
 
     rows, reminder = divmod(n_samples, cols)
 
@@ -53,7 +57,7 @@ def show_df(df: pd.DataFrame, n_samples: int, cols: int = 3, figsize: tuple = (1
     plt.tight_layout()
     plt.show()
 
-def show_dl(dl: DataLoader, n_samples: int=None, cols: int = 6, figsize: tuple = (10, 10)) -> None:
+def show_dl(dl: DataLoader, n_samples: int = None, cols: int = None, figsize: tuple = (10, 10)) -> None:
 
     """
     Displays a grid of n_samples images and their corresponding labels from the Pytorch Dataloader.
@@ -61,21 +65,29 @@ def show_dl(dl: DataLoader, n_samples: int=None, cols: int = 6, figsize: tuple =
     Args:
         dl: The Dataloader containing batches of images and corresponding labels.
         n_samples: The number of samples to display.
+        cols: The number of columns in the figure.
         figsize: The size of the figure (width, height) in inches.
     """
     images, labels = next(iter(dl))
     images = images * 255.0  # Scale to 0-255 range
     images = np.clip(images, 0, 255) / 255.0  # Clip to 0-1 range
-
+    
     if n_samples:
         if n_samples > len(images):
             n_samples = len(images)
+        
+        if cols is None:
+            cols = round(math.sqrt(n_samples))
 
         rows, reminder = divmod(n_samples, cols)
         if reminder > 0:  # Adding an extra row
             rows += 1
     else:
         n_samples = len(images)
+
+        if cols is None:
+            cols = round(math.sqrt(n_samples))
+
         rows, reminder = divmod(n_samples, cols)
         if reminder > 0:  # Adding an extra row
             rows += 1
@@ -106,7 +118,7 @@ def show_dl(dl: DataLoader, n_samples: int=None, cols: int = 6, figsize: tuple =
     plt.tight_layout()
     plt.show()
 
-def plot_acc_loss_curve(train_hist, figsize = (15, 5)) -> None:
+def plot_acc_loss_curve(train_hist: list, save: bool = False, figsize: tuple = (15, 5)) -> None:
     fig = plt.figure(figsize=figsize)
     
     fig.add_subplot(1, 2, 1)
@@ -125,4 +137,12 @@ def plot_acc_loss_curve(train_hist, figsize = (15, 5)) -> None:
     plt.plot(train_hist['val_accs'], label="val")
     plt.legend()
 
+    if save:
+        plt.savefig('acc_loss_curve.png')
+
     plt.show()
+
+if __name__ == "__main__":
+    n_samples = 26
+    cols = round(math.sqrt(n_samples))
+    print(cols)

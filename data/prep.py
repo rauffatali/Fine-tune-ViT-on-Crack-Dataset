@@ -3,11 +3,9 @@ import random
 import pandas as pd
 from pathlib import Path
 
-from utils import is_imbalanced, prep_data
+from utils.data_utils import is_imbalanced, prep_data
 
-ROOT = os.getcwd()
-
-def balance_data(data: dict, imbalance_detection_func=is_imbalanced) -> dict:
+def balance_data(data: dict, seed: int = 42) -> dict:
     """
     Balances class representation within datasets stored in a dictionary.
 
@@ -15,20 +13,14 @@ def balance_data(data: dict, imbalance_detection_func=is_imbalanced) -> dict:
         data (dict): A dictionary containing datasets as key-value pairs. 
                     Keys are dataset names, values are dictionaries with class labels as keys 
                     and lists of image paths and labels as values.
-        imbalance_detection_func (function, optional): A function that determines 
-                    if a dataset is imbalanced. Defaults to `is_imbalanced`.
+        seed (int, optional): Seed for the random number generator. Defaults to 42.
 
     Returns:
         dict: The updated `data` dictionary with balanced datasets.
-
-    Raises:
-        ValueError: If the `imbalance_detection_func` is not a function.
     """
-    if not callable(imbalance_detection_func):
-        raise ValueError("imbalance_detection_func must be a function")
-    
+    random.seed(seed)
     for dataset in data:
-        if imbalance_detection_func(data[dataset]):
+        if is_imbalanced(data[dataset]):
             class_counts = {cls: len(data[dataset][cls]) for cls in data[dataset]}
             underrepresented, overrepresented = min(class_counts, key=class_counts.get), max(class_counts, key=class_counts.get)
             data[dataset][overrepresented] = random.choices(data[dataset][overrepresented], k=len(data[dataset][underrepresented]))
@@ -68,12 +60,12 @@ def get_data_as_dataframe(path: Path, dataset_name: str = None, balance: bool = 
     
     if dataset_name in datasets:
         try:
-                data = prep_data(path, data, dataset_name)
+            data = prep_data(path, data, dataset_name)
         except:
             raise ValueError('Unknown folder structure.')
     elif dataset_name == 'all':
         try:
-            for d_name in os.listdir(path):
+            for d_name in datasets:
                 data = prep_data(path, data, d_name)
         except:
             raise ValueError('Unknown folder structure.')

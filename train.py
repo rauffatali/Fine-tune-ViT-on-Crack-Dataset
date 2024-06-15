@@ -84,7 +84,7 @@ def eval(model, dataloaders, criterion, device):
 
     return val_loss, val_acc, y_pred, y_true
 
-def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, scheduler, device, checkpoint_interval=None, verbose=True):
+def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, scheduler, device, early_stopping=None, checkpoint_interval=None, verbose=True):
 
     # Initialize training params
     params = {
@@ -92,22 +92,22 @@ def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, scheduler, devic
         'batch_size': dataloaders['train'].batch_size,
         'dataset': dataloaders['train'].dataset.dataset_name,
         'dataset_size': len(dataloaders['train'].dataset) + len(dataloaders['valid'].dataset) + len(dataloaders['test'].dataset),
-        'model_name': model.name,
+        'model_name': model.model_name,
         'criterion': type(criterion).__name__,
         'optimizer': type(optimizer).__name__,
         'learning_rate': optimizer.param_groups[0]['lr'], 
         'momentum': optimizer.param_groups[0]['momentum'],
     }
 
-    # Initialize experiment folder
-    # now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    save_dir = f"train/experiment_{params['model_name']}_on_{params['dataset']}_w_epoch_{params['num_epochs']}_lr_{params['learning_rate']}"
+    # Initialize experiments folder
+    now = datetime.now().strftime("%Y-%m-%d %H-%M")
+    save_dir = f"experiments/({now}) {params['model_name']}_on_{params['dataset']}_w_epoch_{params['num_epochs']}_lr_{params['learning_rate']}"
     os.makedirs(save_dir, exist_ok=True)
 
     # Save training params
     params_path = os.path.join(save_dir, 'params.yaml')
     with open(params_path, 'w') as f:
-        yaml.dump(params, f)
+        yaml.dump(params, f, sort_keys=False)
 
     train_hist = {
         'train_losses': [],
@@ -143,9 +143,11 @@ def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, scheduler, devic
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             torch.save(model.state_dict(), os.path.join(weights_dir, 'best.pt'))
-
-        # Save last model
-        torch.save(model.state_dict(), os.path.join(weights_dir, 'last.pt'))
+        #     patience = 10
+        # else:
+        #     patience -= 1
+        #     if patience == 0:
+        #         break
 
         if checkpoint_interval:
             # Save checkpoint
@@ -158,5 +160,13 @@ def train(model, NUM_EPOCHS, dataloaders, criterion, optimizer, scheduler, devic
                     ('epoch', epoch + 1),
                 ])
                 torch.save(checkpoint_state, os.path.join(checkpoints_dir, f'checkpoint_{epoch+1}.pt'))
+        
+        # Save last model
+        torch.save(model.state_dict(), os.path.join(weights_dir, 'last.pt'))
 
     return train_hist
+
+if __name__ == "__main__":
+    now = datetime.now().strftime("%Y-%m-%d %H-%M")
+    save_dir = f"experiments/({now}) vit_on_edm"
+    os.makedirs(save_dir, exist_ok=True)
