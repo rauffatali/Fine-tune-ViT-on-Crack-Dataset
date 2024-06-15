@@ -22,6 +22,7 @@ class ViT(torch.nn.Module):
         super(ViT, self).__init__()
 
         self.pretrained = pretrained
+        self.trainable_layers = trainable_layers
 
         # Validate size and patch_size combination
         valid_sizes = {"base": [16, 32], "large": [16, 32], "huge": [14]}
@@ -46,8 +47,8 @@ class ViT(torch.nn.Module):
             for param in self.model.parameters():
                 param.requires_grad = False
             # Unfreeze some layers if trainable_layers is specified
-            if trainable_layers is not None:
-                self._freeze_layers(trainable_layers)
+            if self.trainable_layers is not None:
+                self._freeze_layers(self.trainable_layers)
 
         # Update head layer for classification
         self.num_classes = num_classes

@@ -89,6 +89,7 @@ def train(model, NUM_EPOCHS, dataloaders, device, criterion, optimizer, schedule
         'batch_size': dataloaders['train'].batch_size,
         'model_name': model.model_name,
         'pretrained': model.pretrained,
+        'trainable_layers': model.trainable_layers,
         'criterion': type(criterion).__name__,
         'optimizer': type(optimizer).__name__,        
     }
@@ -171,10 +172,12 @@ def train(model, NUM_EPOCHS, dataloaders, device, criterion, optimizer, schedule
         
         # Save last model
         torch.save(model.state_dict(), os.path.join(weights_dir, 'last.pt'))
-
-        if early_stopping.early_stop(val_loss):
-            print(f'Early stopping triggered at epoch {epoch+1}')
-            break
+        
+        # Check early stop
+        if early_stopping:
+            if early_stopping.early_stop(val_loss):
+                print(f'Early stopping triggered at epoch {epoch+1}')
+                break
 
         end_time = time.time()
 
