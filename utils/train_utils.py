@@ -12,7 +12,7 @@ class EarlyStopping:
                               ('min' for minimizing loss or 'max' for maximizing accuracy). 
                               Defaults to 'min'.
     """
-    def __init__(self, patience=1, min_delta=0, mode='min'):
+    def __init__(self, patience=5, min_delta=0, mode='min'):
         self.patience = patience
         self.min_delta = min_delta
         self.mode = mode.lower()
@@ -23,7 +23,7 @@ class EarlyStopping:
     
         self._best_val = float('inf') if self.mode == 'min' else float('-inf')
 
-    def early_stop(self, validation_metric):
+    def __call__(self, validation_metric):
         """
         Checks if early stopping should be triggered based on the current validation metric.
 
@@ -33,20 +33,36 @@ class EarlyStopping:
         Returns:
             bool: True if early stopping is triggered, False otherwise.
         """
-        if self.mode == 'min' and validation_metric < self._best_val:
-            self._best_val = validation_metric
-            self.counter = 0
-        elif self.mode == 'max' and validation_metric > self._best_val:
-            self._best_val = validation_metric
-            self.counter = 0
-        elif validation_metric + self.min_delta <= self._best_val:
-            self.counter += 1
+        if self.mode == 'min':
+            if validation_metric < self._best_val:
+                self._best_val = validation_metric
+                self.counter = 0
+            elif (validation_metric + self.min_delta) >= self._best_val:
+                self.counter += 1
+        elif self.mode == 'max':
+            if validation_metric > self._best_val:
+                self._best_val = validation_metric
+                self.counter = 0
+            elif (validation_metric + self.min_delta) <= self._best_val:
+                self.counter += 1
+
         if self.counter >= self.patience:
             return True
+        
         return False
+    
+if __name__ == '__main__':
 
-def epoch_time(start_time, end_time):
-    elapsed_time = end_time - start_time
-    elapsed_mins = int(elapsed_time / 60)
-    elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
-    return elapsed_mins, elapsed_secs
+    early_stopping = EarlyStopping(patience=5, min_delta=0.01, mode='max')
+
+    # Hypothetical validation metric values (e.g., acc)
+    accs = [0.52, 0.48, 0.49, 0.45, 0.51, 0.48, 0.49]
+    # Hypothetical validation metric values (e.g., loss)
+    # losses = [0.52, 0.51, 0.5, 0.49, 0.5, 0.51, 0.5, 0.52, 0.53]
+
+    for i, m in enumerate(accs):
+        stop = early_stopping(m)
+        print(f'Epoch {i+1}, Loss {m}, Counter: {early_stopping.counter}, Patience: {early_stopping.patience}')
+        if stop:
+            print(f"Early stopping triggered at epoch {i+1}!")
+            break

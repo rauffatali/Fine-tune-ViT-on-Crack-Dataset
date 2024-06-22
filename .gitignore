@@ -1,0 +1,5 @@
+# ignore all training files
+experiments/
+
+# ignore all grid search experiments
+search/

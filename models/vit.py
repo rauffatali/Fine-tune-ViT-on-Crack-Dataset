@@ -9,7 +9,7 @@ class ViT(torch.nn.Module):
     """
     ViT model with configurable size, patch size, pre-trained weights, and trainable layers.
     """
-    def __init__(self, size: str, patch_size: int = 16, num_classes = int, pretrained: bool = False, trainable_layers: Optional[int] = None):
+    def __init__(self, size: str, patch_size: int = 16, num_classes = int, pretrained: bool = False, image_size: int = None, trainable_layers: Optional[int] = None):
         """
         Initializes the ViT model with the specified parameters.
 
@@ -21,6 +21,7 @@ class ViT(torch.nn.Module):
         """
         super(ViT, self).__init__()
 
+        self.image_size = image_size
         self.pretrained = pretrained
         self.trainable_layers = trainable_layers
 
@@ -39,7 +40,10 @@ class ViT(torch.nn.Module):
             ("large", 32): models.vit_l_32,
             ("huge", 14): models.vit_h_14,
         }
-        self.model = model_func[(size, patch_size)](weights=weights)
+        if self.image_size: 
+            self.model = model_func[(size, patch_size)](weights=weights, image_size=self.image_size)
+        else:
+            self.model = model_func[(size, patch_size)](weights=weights)
         self.model_name = model_func[(size, patch_size)].__name__
         
         if pretrained:
