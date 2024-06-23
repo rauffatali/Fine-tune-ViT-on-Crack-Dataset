@@ -1,3 +1,6 @@
+# ignore all pychace folders
+**/__pycache__/
+
 # ignore all training files
 experiments/
 
