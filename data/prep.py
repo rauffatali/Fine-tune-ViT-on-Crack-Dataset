@@ -5,7 +5,7 @@ from pathlib import Path
 
 from utils.data_utils import is_imbalanced, prep_data
 
-def balance_data(data: dict, seed: int = 42) -> dict:
+def balance_data(data: dict, seed: int = 42, samp_to_add: int = 0) -> dict:
     """
     Balances class representation within datasets stored in a dictionary.
 
@@ -23,7 +23,10 @@ def balance_data(data: dict, seed: int = 42) -> dict:
         if is_imbalanced(data[dataset]):
             class_counts = {cls: len(data[dataset][cls]) for cls in data[dataset]}
             underrepresented, overrepresented = min(class_counts, key=class_counts.get), max(class_counts, key=class_counts.get)
-            data[dataset][overrepresented] = random.choices(data[dataset][overrepresented], k=len(data[dataset][underrepresented]))
+            data[dataset][overrepresented] = random.choices(
+                data[dataset][overrepresented], 
+                k=(len(data[dataset][underrepresented] + samp_to_add))
+            )
     
     return data
 
