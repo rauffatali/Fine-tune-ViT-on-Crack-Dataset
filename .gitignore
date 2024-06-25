@@ -6,3 +6,7 @@ experiments/
 
 # ignore all grid search experiments
 search/
+
+# ignore certain files
+visualize-vit-feature-attention-maps.ipynb
+vit-from-scratch.ipynb

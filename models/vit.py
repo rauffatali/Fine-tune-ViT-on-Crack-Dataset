@@ -9,13 +9,24 @@ class ViT(torch.nn.Module):
     """
     ViT model with configurable size, patch size, pre-trained weights, and trainable layers.
     """
-    def __init__(self, size: str, patch_size: int = 16, num_classes = int, pretrained: bool = False, image_size: int = None, trainable_layers: Optional[int] = None):
+    def __init__(
+        self, 
+        size: str, 
+        patch_size: int, 
+        num_classes = int, 
+        image_size: int = None, 
+        weigths: str = 'imagenet',
+        pretrained: bool = False, 
+        trainable_layers: Optional[int] = None):
         """
         Initializes the ViT model with the specified parameters.
 
         Args:
             size: String specifying the model size (base, large, or huge).
             patch_size: Integer representing the patch size for image processing.
+            num_classes (int): Number of classes the model will be trained to classify.
+            image_size (int, optional): Integer representing the input image size. Defaults to None (use default size based on model size).
+            weights (str, optional): String indicating the pre-trained weights to load ('imagenet' or 'custom'). Defaults to 'imagenet'.
             pretrained: Boolean indicating whether to load pre-trained weights.
             trainable_layers: Integer specifying the number of final layers to fine-tune (optional).
         """
@@ -30,7 +41,7 @@ class ViT(torch.nn.Module):
         if size not in valid_sizes or patch_size not in valid_sizes[size]:
             raise ValueError(f"Invalid combination of size '{size}' and patch_size {patch_size}.")
 
-        weights = 'DEFAULT' if pretrained else None
+        weights = 'DEFAULT' if self.pretrained and weigths=='imagenet' else None
 
         # Load appropriate model based on size and patch size
         model_func = {
@@ -52,14 +63,14 @@ class ViT(torch.nn.Module):
                 param.requires_grad = False
             # Unfreeze some layers if trainable_layers is specified
             if self.trainable_layers is not None:
-                self._freeze_layers(self.trainable_layers)
+                self._unfreeze_layers(self.trainable_layers)
 
         # Update head layer for classification
         self.num_classes = num_classes
         num_features_in = self.model.heads.head.in_features
         self.model.heads.head = torch.nn.Linear(num_features_in, self.num_classes)
 
-    def _freeze_layers(self, trainable_layers: int):
+    def _unfreeze_layers(self, trainable_layers: int):
         """
         Freezes all model layers except the last `trainable_layers`.
 
@@ -87,3 +98,6 @@ class ViT(torch.nn.Module):
 
     def forward(self, x):
         return self.model(x)
+    
+if __name__ == '__main__':
+    model = ViT(size='base', patch_size=16, image_size=768, num_classes=2, pretrained=True, trainable_layers=6)
