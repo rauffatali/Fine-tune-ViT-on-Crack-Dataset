@@ -25,7 +25,7 @@ def balance_data(data: dict, seed: int = 42, samp_to_add: int = 0) -> dict:
             underrepresented, overrepresented = min(class_counts, key=class_counts.get), max(class_counts, key=class_counts.get)
             data[dataset][overrepresented] = random.choices(
                 data[dataset][overrepresented], 
-                k=(len(data[dataset][underrepresented] + samp_to_add))
+                k=(len(data[dataset][underrepresented]) + samp_to_add)
             )
     
     return data
